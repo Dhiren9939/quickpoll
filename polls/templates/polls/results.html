@@ -1,0 +1,72 @@
+{% extends 'polls/base.html' %}
+
+{% block content %}
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-lg-8">
+                <div class="card mb-4">
+                    <div class="card-header">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <h3 class="mb-0">{{ poll.question }}</h3>
+                            <button class="btn btn-outline-primary btn-sm" onclick="sharePoll()">
+                                <i class="bi bi-share"></i> Share
+                            </button>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <h5 class="card-title">Results</h5>
+                        <ul class="list-group">
+                            {% for vote in votes %}
+                                <li class="list-group-item d-flex justify-content-between align-items-center">
+                                    {{ vote.choice__choice_text }}
+                                    <span class="badge bg-primary rounded-pill">{{ vote.total }}</span>
+                                </li>
+                            {% endfor %}
+                        </ul>
+                    </div>
+                </div>
+                
+                <a href="{% url 'index' %}" class="btn btn-secondary">Back to Polls</a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Share Link Modal -->
+    <div class="modal fade" id="shareModal" tabindex="-1" aria-labelledby="shareModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content bg-dark">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="shareModalLabel">Share this poll</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="input-group mb-3">
+                        <input type="text" id="share-url" class="form-control" value="{{ request.scheme }}://{{ request.get_host }}{% url 'shared_poll' poll.share_id %}" readonly>
+                        <button class="btn btn-outline-primary" type="button" onclick="copyShareLink()">Copy</button>
+                    </div>
+                    <div id="copy-feedback" class="text-success" style="display: none;">Link copied to clipboard!</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function sharePoll() {
+            var shareModal = new bootstrap.Modal(document.getElementById('shareModal'));
+            shareModal.show();
+        }
+        
+        function copyShareLink() {
+            var copyText = document.getElementById("share-url");
+            copyText.select();
+            copyText.setSelectionRange(0, 99999); /* For mobile devices */
+            navigator.clipboard.writeText(copyText.value);
+            
+            var feedback = document.getElementById("copy-feedback");
+            feedback.style.display = "block";
+            setTimeout(function() {
+                feedback.style.display = "none";
+            }, 2000);
+        }
+    </script>
+{% endblock %}

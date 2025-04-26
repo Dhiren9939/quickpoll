@@ -1,0 +1,86 @@
+{% extends 'polls/base.html' %}
+
+{% block content %}
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="card">
+                <div class="card-header bg-dark text-white">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h3 class="mb-0">{{ poll.question }}</h3>
+                        <button class="btn btn-outline-light btn-sm" onclick="sharePoll()">
+                            <i class="bi bi-share"></i> Share
+                        </button>
+                    </div>
+                    <div class="text-muted small">
+                        Created by @{{ poll.created_by.username }}
+                        {% if poll.expire_date %}
+                            • Ends {{ poll.expire_date|date:"M d, Y" }}
+                        {% endif %}
+                    </div>
+                </div>
+                <div class="card-body">
+                    <form method="post">
+                        {% csrf_token %}
+                        <div class="list-group mb-4">
+                            {% for choice in poll.choices.all %}
+                                <label class="list-group-item list-group-item-action d-flex justify-content-between align-items-center poll-option">
+                                    <div>
+                                        <input class="form-check-input me-3" type="radio" name="choice" value="{{ choice.id }}">
+                                        {{ choice.choice_text }}
+                                    </div>
+                                    {% if choice.votes.count > 0 %}
+                                        <span class="badge bg-primary rounded-pill">{{ choice.votes.count }}</span>
+                                    {% endif %}
+                                </label>
+                            {% endfor %}
+                        </div>
+                        <button type="submit" class="btn btn-primary w-100 py-2">
+                            Submit Vote
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Share Link Modal -->
+<div class="modal fade" id="shareModal" tabindex="-1" aria-labelledby="shareModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content bg-dark">
+            <div class="modal-header">
+                <h5 class="modal-title" id="shareModalLabel">Share this poll</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="input-group mb-3">
+                    <input type="text" id="share-url" class="form-control" value="{{ request.scheme }}://{{ request.get_host }}{% url 'shared_poll' poll.share_id %}" readonly>
+                    <button class="btn btn-outline-primary" type="button" onclick="copyShareLink()">Copy</button>
+                </div>
+                <div id="copy-feedback" class="text-success" style="display: none;">Link copied to clipboard!</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    function sharePoll() {
+        var shareModal = new bootstrap.Modal(document.getElementById('shareModal'));
+        shareModal.show();
+    }
+    
+    function copyShareLink() {
+        var copyText = document.getElementById("share-url");
+        copyText.select();
+        copyText.setSelectionRange(0, 99999); /* For mobile devices */
+        navigator.clipboard.writeText(copyText.value);
+        
+        var feedback = document.getElementById("copy-feedback");
+        feedback.style.display = "block";
+        setTimeout(function() {
+            feedback.style.display = "none";
+        }, 2000);
+    }
+</script>
+{% endblock %}

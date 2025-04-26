@@ -1,0 +1,102 @@
+{% extends 'polls/base.html' %} 
+{% load widget_tweaks %} 
+{% block content %}
+<h1 class="mb-4">Edit Poll</h1>
+
+<form method="post" id="poll-form">
+  {% csrf_token %}
+
+  <div class="mb-3">
+    {{ form.question.label_tag }} {% render_field form.question class="form-control" %}
+    {% if form.question.errors %}
+      <div class="text-danger">{{ form.question.errors }}</div>
+    {% endif %}
+  </div>
+
+  <div class="mb-3">
+    {{ form.expire_date.label_tag }} {% render_field form.expire_date class="form-control" %}
+    {% if form.expire_date.errors %}
+      <div class="text-danger">{{ form.expire_date.errors }}</div>
+    {% endif %}
+    <small class="text-muted">Leave blank for no expiration or set a future date</small>
+  </div>
+
+  <h4 class="mt-4">Options</h4>
+  <div id="options-container">
+    {{ formset.management_form }} 
+    {% for form in formset %}
+      <div class="mb-3 option-form d-flex gap-2">
+        {% render_field form.choice_text class="form-control" placeholder="Enter option text" %} 
+        {% if form.instance.pk %}
+          {{ form.DELETE }}
+          <button type="button" class="btn btn-outline-danger remove-option">×</button>
+        {% else %}
+          <button type="button" class="btn btn-outline-danger remove-option">×</button>
+        {% endif %} 
+        {% for hidden in form.hidden_fields %}
+          {{ hidden }}
+        {% endfor %}
+      </div>
+    {% endfor %}
+  </div>
+
+  <div class="d-flex flex-column align-items-start gap-2 mt-3">
+    <button type="button" id="add-option" class="btn btn-outline-secondary">
+      + Add Option
+    </button>
+    <button type="submit" name="save" class="btn btn-primary">
+      Save Changes
+    </button>
+    <button type="submit" name="end_now" class="btn btn-warning">
+      End Poll Now
+    </button>
+  </div>
+</form>
+
+<script>
+  document.addEventListener("DOMContentLoaded", function () {
+    const addOptionButton = document.getElementById("add-option");
+    const optionsContainer = document.getElementById("options-container");
+    const totalForms = document.getElementById("id_choices-TOTAL_FORMS");
+    const formPrefix = "choices";
+
+    addOptionButton.addEventListener("click", function () {
+      const formCount = parseInt(totalForms.value);
+      const newForm = document.createElement("div");
+      newForm.classList.add("mb-3", "option-form", "d-flex", "gap-2");
+
+      newForm.innerHTML = `
+            <input type="text" name="${formPrefix}-${formCount}-choice_text" 
+                   class="form-control" placeholder="Enter option text" 
+                   id="id_${formPrefix}-${formCount}-choice_text">
+            <input type="hidden" name="${formPrefix}-${formCount}-id" id="id_${formPrefix}-${formCount}-id">
+            <button type="button" class="btn btn-outline-danger remove-option">×</button>
+        `;
+
+      optionsContainer.appendChild(newForm);
+      totalForms.value = formCount + 1;
+
+      // Add event listener to new remove button
+      newForm
+        .querySelector(".remove-option")
+        .addEventListener("click", function () {
+          newForm.remove();
+        });
+    });
+
+    // Add event listeners to existing remove buttons
+    document.querySelectorAll(".remove-option").forEach((button) => {
+      button.addEventListener("click", function () {
+        const formDiv = this.parentElement;
+        const deleteField = formDiv.querySelector('[name$="-DELETE"]');
+        if (deleteField) {
+          deleteField.value = "on"; // Mark for deletion
+          formDiv.style.display = "none"; // Hide instead of remove
+        } else {
+          formDiv.remove();
+        }
+      });
+    });
+  });
+</script>
+{% endblock %}
