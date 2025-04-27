@@ -9,11 +9,15 @@
         <div>
           <h5>{{ poll.question }}</h5>
           <small class="text-muted">
-            Created: {{ poll.pub_date|date:"M d, Y" }} | Status: {% if
-            poll.is_active %}Active{% else %}Ended{% endif %} {% if
-            poll.expire_date %} | {% if poll.is_active %} Ends: {{
-            poll.expire_date|date:"M d, Y" }} {% else %} Ended: {{
-            poll.expire_date|date:"M d, Y" }} {% endif %} {% endif %}
+            Created: {{ poll.pub_date|date:"M d, Y" }} | Status: 
+            {% if poll.is_active %}Active{% else %}Ended{% endif %}
+            {% if poll.expire_date %} | 
+              {% if poll.is_active %}
+                Ends: {{ poll.expire_date|date:"M d, Y" }}
+              {% else %}
+                Ended: {{ poll.expire_date|date:"M d, Y" }}
+              {% endif %}
+            {% endif %}
           </small>
         </div>
         <div class="btn-group">

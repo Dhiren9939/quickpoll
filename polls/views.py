@@ -58,8 +58,8 @@ def vote(request, poll_id):
         messages.error(request, "This poll has expired!")
         return redirect("index")
     if Vote.objects.filter(user=request.user, poll=poll).exists():
-        messages.error(request, "You have already voted on this poll!")
-        return redirect("index")
+        messages.info(request, "You have already voted on this poll!")
+        return redirect("results", poll.id)
     if request.method == "POST":
         choice_id = request.POST.get("choice")
         if choice_id:
